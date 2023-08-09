@@ -33,13 +33,13 @@ pipeline {
         stage('Deploy') {
             steps {
                 // Create the directory '/root/microservices/firebase-admin-service' if it doesn't exist
-                sh 'mkdir -p /root/microservices/firebase-admin-service'
+                sh 'mkdir -p /root/microservices/tourism-service'
 
                 // Move the 'dist' directory to '/root/microservices/firebase-admin-service'
-                sh 'mv dist /root/microservices/firebase-admin-service'
+                sh 'mv dist /root/microservices/tourism-service'
 
                 // Move the 'node_modules' directory to '/root/microservices/firebase-admin-service'
-                sh 'mv node_modules /root/microservices/firebase-admin-service'
+                sh 'mv node_modules /root/microservices/tourism-service'
             }
         }
     }

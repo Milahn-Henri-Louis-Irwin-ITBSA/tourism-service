@@ -10,9 +10,29 @@ import {
   useContainer as routingContainer,
 } from 'routing-controllers';
 import * as http from 'http';
+import cors from 'cors';
+import { rateLimit } from 'express-rate-limit';
 
 const baseDir = __dirname;
 const expressApp = express();
+expressApp.use(
+  cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 86400,
+  })
+);
+
+// Continue with other middleware
+const limiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  message: 'Too many requests from this IP, please try again after 5 minutes',
+  limit: 50,
+  standardHeaders: false,
+  legacyHeaders: true,
+});
 
 // Handling the DependencyInjection across the entire application
 routingContainer(Container);
@@ -26,7 +46,13 @@ useExpressServer(expressApp, {
 
 expressApp.use(bodyParser.urlencoded({ extended: false }));
 expressApp.use(bodyParser.json());
-
+expressApp.use('/v1/api', limiter);
+expressApp.get('/', (req, res) => {
+  res.status(200).json({
+    service: 'tourism',
+    status: 'ok',
+  });
+});
 const server = http.createServer(expressApp);
 server.listen(ENV_CONFIG.app.port, () => {
   Logger.info(

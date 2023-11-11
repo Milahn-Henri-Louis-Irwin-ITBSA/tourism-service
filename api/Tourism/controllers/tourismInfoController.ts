@@ -2,7 +2,7 @@ import { JsonController, Get, QueryParam } from 'routing-controllers';
 import { Service } from 'typedi';
 import { URL_INFO } from '../userApiInfo';
 import { Logger } from '../../../libs/logger';
-import { userInfoSvc } from '../service/userInfoSvc';
+import { userInfoSvc } from '../service/hotelSvc';
 
 @JsonController(URL_INFO.contextPath + '/userInfo')
 @Service()

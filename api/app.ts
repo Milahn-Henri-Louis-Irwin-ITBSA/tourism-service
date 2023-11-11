@@ -1,6 +1,6 @@
 import 'reflect-metadata';
 import 'module-alias/register';
-import * as express from 'express';
+import express from 'express';
 import * as bodyParser from 'body-parser';
 import Container from 'typedi';
 import { ENV_CONFIG } from '../app/config';

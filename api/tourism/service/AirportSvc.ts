@@ -1,6 +1,6 @@
 import ITourismStrategy from '../model/ITourismStrategy';
 
-export default class FlightSvc implements ITourismStrategy {
+export default class Airport implements ITourismStrategy {
   public getClosestCoordinates = async (
     lat: number,
     lng: number,

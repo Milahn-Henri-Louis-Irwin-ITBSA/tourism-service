@@ -12,7 +12,9 @@ import {
 import * as http from 'http';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
+import { config } from 'dotenv';
 
+config();
 const baseDir = __dirname;
 const expressApp = express();
 expressApp.use(

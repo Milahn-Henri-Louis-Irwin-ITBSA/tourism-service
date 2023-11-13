@@ -7,7 +7,9 @@ import {
 import { Service } from 'typedi';
 import { URL_INFO } from '../tourismApiInfo';
 import HotelSvc from '../service/HotelSvc';
-import FlightSvc from '../service/FlightSvc';
+import AirportSvc from '../service/AirportSvc';
+import FuelSvc from '../service/FuelSvc';
+import TourismBuilder from '../service/TourismBuilder';
 
 @JsonController(URL_INFO.contextPath + '/tourism')
 @Service()
@@ -67,34 +69,38 @@ export class TourismController {
         });
       }
 
-      const requestedServices = [];
+      const tourismBuilder = new TourismBuilder();
 
       if (services.includes('hotel')) {
-        requestedServices.push(new HotelSvc());
-      }
-      // if (services.includes('fuel')) {
-      //   requestedServices.push(new FuelSvc());
-      // }
-      if (services.includes('flight')) {
-        requestedServices.push(new FlightSvc());
+        tourismBuilder.addService(new HotelSvc());
       }
 
-      const data = Promise.all(
-        requestedServices.map((svc) =>
-          svc.getClosestCoordinates(
-            coordinates.latitude,
-            coordinates.longitude,
-            radius
+      if (services.includes('airport')) {
+        tourismBuilder.addService(new AirportSvc());
+      }
+
+      if (services.includes('fuel')) {
+        tourismBuilder.addService(new FuelSvc());
+      }
+
+      const servicesData = await Promise.all(
+        tourismBuilder
+          .build()
+          .map((service) =>
+            service.getClosestCoordinates(
+              coordinates.latitude,
+              coordinates.longitude,
+              radius
+            )
           )
-        )
       );
 
       return Promise.resolve({
         status: 200,
-        tourismInfo: await data,
+        data: servicesData.flat().filter((s) => !(s instanceof Error)),
+        errors: servicesData.filter((s) => s instanceof Error),
       });
     } catch (error) {
-      console.log(error);
       return Promise.resolve({
         status: 500,
         message: 'Internal Server Error',

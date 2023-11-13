@@ -27,6 +27,46 @@ export class TourismController {
           message: 'Unauthorized',
         });
       }
+      if (!coordinates || !coordinates.latitude || !coordinates.longitude) {
+        return Promise.resolve({
+          status: 400,
+          message: 'Bad Request',
+        });
+      }
+      if (!services) {
+        return Promise.resolve({
+          status: 400,
+          message: 'Bad Request',
+        });
+      }
+      if (!radius) {
+        return Promise.resolve({
+          status: 400,
+          message: 'Bad Request',
+        });
+      }
+      if (typeof radius !== 'number') {
+        return Promise.resolve({
+          status: 400,
+          message: 'Bad Request',
+        });
+      }
+      if (
+        typeof coordinates.latitude !== 'number' ||
+        typeof coordinates.longitude !== 'number'
+      ) {
+        return Promise.resolve({
+          status: 400,
+          message: 'Bad Request',
+        });
+      }
+      if (typeof services !== 'object') {
+        return Promise.resolve({
+          status: 400,
+          message: 'Bad Request',
+        });
+      }
+
       const requestedServices = [];
 
       if (services.includes('hotel')) {
@@ -51,7 +91,7 @@ export class TourismController {
 
       return Promise.resolve({
         status: 200,
-        tourismInfo: data,
+        tourismInfo: await data,
       });
     } catch (error) {
       console.log(error);

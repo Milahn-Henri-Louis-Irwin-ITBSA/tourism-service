@@ -12,6 +12,7 @@ import {
 import * as http from 'http';
 import cors from 'cors';
 import { rateLimit } from 'express-rate-limit';
+import admin from 'firebase-admin';
 import { config } from 'dotenv';
 
 config();
@@ -44,6 +45,10 @@ useExpressServer(expressApp, {
   routePrefix: ENV_CONFIG.app.apiRoot,
   defaultErrorHandler: false,
   controllers: [baseDir + `/**/controllers/*{.js,.ts}`],
+});
+
+admin.initializeApp({
+  credential: admin.credential.cert(process.env.GOOGLE_APPLICATION_CREDENTIALS),
 });
 
 expressApp.use(bodyParser.urlencoded({ extended: false }));

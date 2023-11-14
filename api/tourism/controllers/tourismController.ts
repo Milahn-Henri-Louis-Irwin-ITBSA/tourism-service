@@ -10,11 +10,19 @@ import HotelSvc from '../service/HotelSvc';
 import AirportSvc from '../service/AirportSvc';
 import FuelSvc from '../service/FuelSvc';
 import TourismBuilder from '../service/TourismBuilder';
+import AuthSvc from '../service/AuthSvc';
+import type { DecodedIdToken } from 'firebase-admin/auth';
 
 @JsonController(URL_INFO.contextPath + '/tourism')
 @Service()
 export class TourismController {
-  @Get('/getData')
+  private authSvc: AuthSvc;
+
+  constructor() {
+    this.authSvc = new AuthSvc();
+  }
+
+  @Get('/nearby')
   public async getData(
     @HeaderParam('Authorization') authorization: string,
     @BodyParam('coordinates')
@@ -62,7 +70,28 @@ export class TourismController {
           message: 'Bad Request',
         });
       }
-      if (typeof services !== 'object') {
+
+      const bearerToken = authorization.replace('Bearer ', '');
+
+      let decodedToken: DecodedIdToken | Error;
+      try {
+        decodedToken = await this.authSvc.verifyToken(bearerToken);
+      } catch (error) {
+        if (error instanceof Error) {
+          return Promise.resolve({
+            status: 401,
+            message: 'Unauthorized',
+            error: error.message,
+          });
+        }
+
+        return Promise.resolve({
+          status: 500,
+          message: 'Internal Server Error',
+        });
+      }
+
+      if (Array.isArray(services) && services.length === 0) {
         return Promise.resolve({
           status: 400,
           message: 'Bad Request',
@@ -70,6 +99,7 @@ export class TourismController {
       }
 
       const tourismBuilder = new TourismBuilder();
+      console.log(decodedToken);
 
       if (services.includes('hotel')) {
         tourismBuilder.addService(new HotelSvc());
@@ -101,6 +131,7 @@ export class TourismController {
         errors: servicesData.filter((s) => s instanceof Error),
       });
     } catch (error) {
+      console.log(error);
       return Promise.resolve({
         status: 500,
         message: 'Internal Server Error',

@@ -5,7 +5,7 @@ import Fuel from './FuelSvc';
 export default class TourismBuilder {
   private _services: (Airport | Hotel | Fuel)[] = [];
 
-  public addService(service: Airport | Hotel): TourismBuilder {
+  public addService(service: Airport | Hotel | Fuel): TourismBuilder {
     // Check if the service is already in the array
     if (this._services.includes(service)) {
       return this;

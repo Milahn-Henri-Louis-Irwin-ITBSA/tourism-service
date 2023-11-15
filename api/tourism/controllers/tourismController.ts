@@ -27,8 +27,7 @@ export class TourismController {
     @HeaderParam('Authorization') authorization: string,
     @BodyParam('coordinates')
     coordinates: { latitude: number; longitude: number },
-    @BodyParam('services') services: string[],
-    @BodyParam('radius') radius: number
+    @BodyParam('services') services: { name: string; radius: number }[]
   ): Promise<any> {
     try {
       if (!authorization) {
@@ -49,16 +48,16 @@ export class TourismController {
           message: 'Bad Request',
         });
       }
-      if (!radius) {
+      if (!Array.isArray(services)) {
         return Promise.resolve({
           status: 400,
           message: 'Bad Request',
         });
       }
-      if (typeof radius !== 'number') {
+      if (services.length === 0) {
         return Promise.resolve({
           status: 400,
-          message: 'Bad Request',
+          message: 'Need at least one radius, and the same amount as services',
         });
       }
       if (
@@ -85,6 +84,8 @@ export class TourismController {
           });
         }
 
+        console.log(decodedToken);
+
         return Promise.resolve({
           status: 500,
           message: 'Internal Server Error',
@@ -99,19 +100,16 @@ export class TourismController {
       }
 
       const tourismBuilder = new TourismBuilder();
-      console.log(decodedToken);
 
-      if (services.includes('hotel')) {
-        tourismBuilder.addService(new HotelSvc());
-      }
-
-      if (services.includes('airport')) {
-        tourismBuilder.addService(new AirportSvc());
-      }
-
-      if (services.includes('fuel')) {
-        tourismBuilder.addService(new FuelSvc());
-      }
+      services.map((service) => {
+        if (service.name === 'hotel') {
+          tourismBuilder.addService(new HotelSvc(service.radius));
+        } else if (service.name === 'airport') {
+          tourismBuilder.addService(new AirportSvc(service.radius));
+        } else if (service.name === 'fuel') {
+          tourismBuilder.addService(new FuelSvc(service.radius));
+        }
+      });
 
       const servicesData = await Promise.all(
         tourismBuilder
@@ -119,15 +117,14 @@ export class TourismController {
           .map((service) =>
             service.getClosestCoordinates(
               coordinates.latitude,
-              coordinates.longitude,
-              radius
+              coordinates.longitude
             )
           )
       );
 
       return Promise.resolve({
         status: 200,
-        data: servicesData.flat().filter((s) => !(s instanceof Error)),
+        data: servicesData,
         errors: servicesData.filter((s) => s instanceof Error),
       });
     } catch (error) {
@@ -135,6 +132,7 @@ export class TourismController {
       return Promise.resolve({
         status: 500,
         message: 'Internal Server Error',
+        error: error,
       });
     }
   }

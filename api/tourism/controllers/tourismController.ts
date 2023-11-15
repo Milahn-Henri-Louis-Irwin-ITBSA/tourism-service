@@ -1,8 +1,8 @@
 import {
   JsonController,
-  Get,
   HeaderParam,
   BodyParam,
+  Post,
 } from 'routing-controllers';
 import { Service } from 'typedi';
 import { URL_INFO } from '../tourismApiInfo';
@@ -22,7 +22,7 @@ export class TourismController {
     this.authSvc = new AuthSvc();
   }
 
-  @Get('/nearby')
+  @Post('/nearby')
   public async getData(
     @HeaderParam('Authorization') authorization: string,
     @BodyParam('coordinates')
